@@ -143,7 +143,7 @@ def mapResults(ws, msg):
 
 if __name__ == "__main__":
     init_log(file_path)
-    websocket.enableTrace(True)
+    # websocket.enableTrace(True)
     ws = websocket.WebSocketApp(
         http_addr, on_message=mapResults, on_error=on_error, on_close=closeConnection)
     ws.run_forever()

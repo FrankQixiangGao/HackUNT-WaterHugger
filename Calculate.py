@@ -52,7 +52,7 @@ def selectOptimalWaterFlow(flowRateIn, operations, ratiosSorted):
 
     while isContinued:
         factorySet = set(ratiosSorted['id'])
-        display(ratiosSorted)
+        # display(ratiosSorted)
         for idx, pt in ratiosSorted.iterrows():
             if maxInFlow <= 0:
                 isContinued = False

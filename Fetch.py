@@ -59,7 +59,7 @@ def sort_data(client_data):
 
     flowRateIn = client_data['flowRateIn']
     factories = client_data['operations']
-    revenue_vs_flow = pd.DataFrame(columns=['id', 'FLOWPERDAY', 'ratio' "mark"])
+    revenue_vs_flow = pd.DataFrame(columns=['id', FLOWPERDAY, 'ratio', 'mark'])
     for iter, factory in enumerate(factories):
         id = factory['id']
         ratio = getOperationRatios(factory['revenueStructure'])
@@ -71,11 +71,7 @@ def sort_data(client_data):
         df = pd.DataFrame(arr.transpose(), columns=['id', FLOWPERDAY, 'ratio', 'mark'])
         df[FLOWPERDAY] = df[FLOWPERDAY].astype(int)
         df['ratio'] = df['ratio'].astype(float)
-        df['mark'] = df['ratio'].astype(int)
-        # arr = np.array([id, flowPerDay, ratio])
-        # df = pd.DataFrame(arr.transpose(), columns=['id', 'FLOWPERDAY, 'ratio'])
-        # df['FLOWPERDAY] = df['FLOWPERDAY].astype(int)
-        # df['ratio'] = df['ratio'].astype(float)
+        df['mark'] = df['mark'].astype(int)
 
         revenue_vs_flow = pd.concat([revenue_vs_flow, df], ignore_index=True)
 
@@ -96,15 +92,13 @@ def helper(ws, msg):
       ans = pd.DataFrame(res)
       ans = ans.drop(columns=['ratio'])
       ans = ans.rename(columns={FLOWPERDAY: "flowRate", "id": "operationId"})
-      display(ans)
       ws.send(ans.to_json(orient='records'))
       
       return 0, ans
     elif client_data['type'] == "OPTIMATION_RESULT":
        # response
        return 1, client_data
-
-
+#local machine
 def mapResults(ws, msg):
     status, res = helper(ws, msg)
     if status == 0:
@@ -113,10 +107,44 @@ def mapResults(ws, msg):
         print(res)
         print("Server responded")
 
+# def helper(ws, msg):
+#     client_data = fetch_data(msg)
+#     if type(client_data) == type("string"):
+#         print(msg)
+#         return -1, msg
+#     if client_data['type'] == "CURRENT_STATE":
+#       flowRateIn, factories, revenue_vs_flow = sort_data(client_data)
+#       res = selectOptimalWaterFlow(flowRateIn, factories, revenue_vs_flow)
+#       ans = pd.DataFrame(res)
+#       ans = ans.drop(columns=['ratio'])
+#       ans = ans.rename(columns={FLOWPERDAY: "flowRate", "id": "operationId"})
+#       ws.send(ans.to_json(orient='records'))
+
+#       ans = json.dumps(ans)
+#       return 0, {**ans, "status":802}
+#     elif client_data['type'] == "OPTIMATION_RESULT":
+#        # response
+#        client_data = json.dumps(client_data)
+#        return 1, {**client_data, "status":803}
+
+# connect to client
+# client = create_connection(client_addr)
+# def mapResults(ws, msg):
+#     status, res = helper(ws, msg)
+#     res = json.loads(res)
+#     if status == 0:
+#         print("Respond computed and sent to server")
+#         client.send(res)
+#     elif status == 1:
+#         print("Server responded")
+#         client.send(res)
+
+
 
 if __name__ == "__main__":
-    websocket.enableTrace(True)
     init_log(file_path)
+    websocket.enableTrace(True)
     ws = websocket.WebSocketApp(
         http_addr, on_message=mapResults, on_error=on_error, on_close=closeConnection)
     ws.run_forever()
+

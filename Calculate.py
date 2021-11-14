@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 from log import *  
 from global_const import *
+from IPython.display import display
 
 
 # This function returns a list of ratios for a specific operation
@@ -42,22 +43,16 @@ def findOperationRatios(points, opId):
         prevPt = points[i]
     return ratios
 
-
-# def findAllOperationRatiosSorted(operations):
-#     ratios_list = []
-#     for operation in operations:
-#         ratios_list.insert(
-#             *findOperationRatios(operation["revenueStructure"], operation['id']))
-#     return ratios_list.sort(reverse=True, key=lambda elem: elem.r)
-
 def selectOptimalWaterFlow(flowRateIn, operations, ratiosSorted):
     results = {}
     maxInFlow = flowRateIn
     log(f'total: {maxInFlow}', file_path)
     #factorySet = set(list(map(lambda elem: elem["id"], operations)))
     isContinued = True
+
     while isContinued:
         factorySet = set(ratiosSorted['id'])
+        display(ratiosSorted)
         for idx, pt in ratiosSorted.iterrows():
             if maxInFlow <= 0:
                 isContinued = False
@@ -88,16 +83,38 @@ def selectOptimalWaterFlow(flowRateIn, operations, ratiosSorted):
                 # no replacement. First time
                 maxInFlow -= allocFlow
             elif maxInFlow == allocFlow:
-                maxInFlow -= allocFlow
-                allocFlow = results[id][FLOWPERDAY] + allocFlow
+                 maxInFlow -= allocFlow
+                 allocFlow = results[id][FLOWPERDAY] + allocFlow
             else:
                 continue
             results[id] = {"ratio": pt["ratio"], FLOWPERDAY: allocFlow, "id": id}
             factorySet.remove(id)
-            pt["mark"] = 1
+
+            ratiosSorted.at[idx, "mark"] = 1
 
     log(f'used: {flowRateIn-maxInFlow}', file_path)
     return list(results.values())
 
+
+"""
+def knap_sack(flowRateIn, operations):
+    revenue_vs_flow = pd.DataFrame(columns=['id', FLOWPERDAY, DOLLARPERDAY, 'mark'])
+    for iter, operation in enumerate(operations):
+        id = operation['id']
+        id = [id]*len(operations)
+        structure = operation['revenueStructure']
+        structure = pd.DataFrame(structure)
+        flowPerDay = list(structure.flowPerDay)
+        dollarPerDay = list(structure.dollarPerDay)
+        mark = [0]*len(operations)
+        
+        arr = np.array([id, flowPerDay, dollarPerDay, mark])
+        df = pd.DataFrame(arr.transpose(), columns=['id', FLOWPERDAY, DOLLARPERDAY, 'mark'])
+        df[FLOWPERDAY] = df[FLOWPERDAY].astype(int)
+        df[FLOWPERDAY] = df[FLOWPERDAY].astype(int)
+        df['mark'] = df['mark'].astype(int)
+
+        revenue_vs_flow = pd.concat([revenue_vs_flow, df], ignore_index=True)
+"""
 
 
